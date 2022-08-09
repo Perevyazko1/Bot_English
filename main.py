@@ -18,31 +18,33 @@ async def start(message: types.Message):
     await message.answer(f'Привет {message.from_user.full_name} \n\n' '<i>Выбери кнопку в меню.</i>',
                           parse_mode=types.ParseMode.HTML)
     try:
-        sql_start(f'ALTER TABLE words ADD COLUMN  "{id_user}" INTEGER ')
+        sql_request(f'ALTER TABLE words ADD COLUMN  "{id_user}" INTEGER ')
     except:
         pass
 
 
 # __________________________ Создание_базы _____________________
 
-def sql_start(reqwest):
+def sql_request(reqwest):
     global base, cur
     base = sq.connect('words.db')
     cur = base.cursor()
     if base:
         print('База подключена')
-    cur.execute(reqwest)
+    cur.execute(reqwest).fetchall()
     base.commit()
 
 
-# _________________________Запись в базу______________________
-async def sql_add_id(id,request):
+
+@dp.message_handler(commands="words")
+async def load_qwes(message: types.Message):
     global base, cur
     base = sq.connect('words.db')
     cur = base.cursor()
-    cur.execute(request, id)
-    base.commit()
-
+    id_user = message.from_id
+    bodymessage = cur.execute(f'SELECT * FROM words WHERE [{id_user}]  IS NULL LIMIT 5').fetchall()
+    print(bodymessage)
+    await message.reply(f'новые слова {bodymessage}')
 
 
 
