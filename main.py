@@ -22,7 +22,22 @@ async def start(message: types.Message):
     except:
         pass
 
-
+#___________________________Чистка_слов________________________
+def clear_text(a):
+   a = str(a)
+   a = a.split("'")
+   a = ''.join(a)
+   a = a.split(")")
+   a = ''.join(a)
+   a = a.split("(")
+   a = ''.join(a)
+   a = a.split(",")
+   a = '|'.join(a)
+   a = a.split("]")
+   a = ''.join(a)
+   a = a.split("[")
+   a = ''.join(a)
+   return a
 # __________________________ Создание_базы _____________________
 
 def sql_request(reqwest):
@@ -44,8 +59,9 @@ def sql_words (reqwest):
 @dp.message_handler(commands="words")
 async def load_qwes(message: types.Message):
     id_user = message.from_id
-    bodymessage = sql_words(f'SELECT * FROM words WHERE [{id_user}]  IS NULL LIMIT 5')
-    await message.reply(f'новые слова {bodymessage}')
+    bodymessage = sql_words(f'SELECT Infinitive, Past_Simple, Participle, Перевод FROM words WHERE '
+                            f'[{id_user}]  IS NULL LIMIT 1')
+    await message.reply(f'новые слова \n{clear_text(bodymessage)}')
 
 
 
