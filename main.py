@@ -31,19 +31,20 @@ def sql_request(reqwest):
     cur = base.cursor()
     if base:
         print('База подключена')
-    cur.execute(reqwest).fetchall()
+    cur.execute(reqwest)
     base.commit()
 
-
-
-@dp.message_handler(commands="words")
-async def load_qwes(message: types.Message):
+def sql_words (reqwest):
     global base, cur
     base = sq.connect('words.db')
     cur = base.cursor()
+    cur.execute(reqwest).fetchall()
+    base.commit()
+    return cur.execute(reqwest).fetchall()
+@dp.message_handler(commands="words")
+async def load_qwes(message: types.Message):
     id_user = message.from_id
-    bodymessage = cur.execute(f'SELECT * FROM words WHERE [{id_user}]  IS NULL LIMIT 5').fetchall()
-    print(bodymessage)
+    bodymessage = sql_words(f'SELECT * FROM words WHERE [{id_user}]  IS NULL LIMIT 5')
     await message.reply(f'новые слова {bodymessage}')
 
 
