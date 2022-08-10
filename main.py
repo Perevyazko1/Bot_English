@@ -18,12 +18,13 @@ async def start(message: types.Message):
     global id_user
     id_user = message.from_id
     print(id_user)
+    number_question = 1
     await message.answer(f'Привет {message.from_user.full_name} \n\n' '<i>Выбери кнопку в меню.</i>',
                           parse_mode=types.ParseMode.HTML)
-    sql_add_user_base('CREATE TABLE IF NOT EXISTS users (id PRIMARY KEY)')
-    sql_save_id('INSERT OR REPLACE INTO users VALUES (?)', id_user)
+    sql_add_user_base('CREATE TABLE IF NOT EXISTS users (id PRIMARY KEY,number_question)')
     try:
-        sql_request(f'ALTER TABLE words ADD COLUMN  "{id_user}" INTEGER ')
+        sql_save_id('INSERT  INTO users VALUES (?,?)', id_user, number_question)
+        # sql_request(f'ALTER TABLE words ADD COLUMN  "{id_user}" INTEGER ')
     except:
         pass
 
@@ -80,13 +81,13 @@ def sql_request(reqwest):
     cur.execute(reqwest)
     base.commit()
 
-def sql_save_id(reqwest,user):
+def sql_save_id(reqwest,user,number_question):
     global base, cur
     base = sq.connect('words.db')
     cur = base.cursor()
     if cur:
         print('Запрос прошел')
-    cur.execute(reqwest, (user,))
+    cur.execute(reqwest, (user,number_question))
     base.commit()
 
 def sql_add_user_base(reqwest):
@@ -113,14 +114,13 @@ def sql_words (reqwest):
 async def load_qwes():
     users = sql_words(f'SELECT*FROM users')
     for user in users:
-        user=clear_user(user)
-        bodymessage = sql_words(f'SELECT Infinitive, Past_Simple, Participle, Перевод FROM words WHERE '
-                            f'[{user}]  IS NULL LIMIT 1')
-        await bot.send_message(chat_id=user,text= f'новые слова \n{clear_text(bodymessage)}')
+        print(type(user[1]))
+        bodymessage = sql_words(f'SELECT Infinitive, Past_Simple, Participle, Перевод FROM words WHERE id_number = {str(user[1])}')
+        await bot.send_message(chat_id=648226895,text= f'новые слова \n{clear_text(bodymessage)}')
 
 
 async def scheduler():
-    times = '21:18','21:19','21:20'
+    times = '02:13','21:19','21:20'
     for time in times:
         aioschedule.every().day.at(time_str=time).do(load_qwes)
     while True:
