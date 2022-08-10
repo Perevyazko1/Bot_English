@@ -20,7 +20,8 @@ async def start(message: types.Message):
     print(id_user)
     await message.answer(f'Привет {message.from_user.full_name} \n\n' '<i>Выбери кнопку в меню.</i>',
                           parse_mode=types.ParseMode.HTML)
-    sql_add_user_base('CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY)')
+    sql_add_user_base('CREATE TABLE IF NOT EXISTS users (id PRIMARY KEY)')
+    sql_save_id('INSERT OR REPLACE INTO users VALUES (?)', id_user)
     try:
         sql_request(f'ALTER TABLE words ADD COLUMN  "{id_user}" INTEGER ')
     except:
@@ -51,6 +52,15 @@ def sql_request(reqwest):
     if cur:
         print('Запрос прошел')
     cur.execute(reqwest)
+    base.commit()
+
+def sql_save_id(reqwest,user):
+    global base, cur
+    base = sq.connect('words.db')
+    cur = base.cursor()
+    if cur:
+        print('Запрос прошел')
+    cur.execute(reqwest, (user,))
     base.commit()
 
 def sql_add_user_base(reqwest):
