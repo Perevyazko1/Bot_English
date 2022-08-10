@@ -31,10 +31,11 @@ async def start(message: types.Message):
 @dp.message_handler(commands="test")
 async def get_test(message: types.Message):
     user = message.from_id
-    bodymessage = sql_words(f'SELECT Infinitive, Past_Simple, Participle FROM words WHERE '
-                            f'[{user}]  IS NULL LIMIT 1')
+    print(user)
+    number_question = sql_words(f'SELECT * FROM users WHERE id IS {str(user)}')
+    number_question = (number_question[0])[1]
+    bodymessage = sql_words(f'SELECT Infinitive, Past_Simple, Participle, Перевод FROM words WHERE id_number = {str(number_question)}')
     await message.answer(f'Введи перевод \n{clear_text(bodymessage)}')
-    await message.answer('dasda')
 
 
 #___________________________Чистка_слов________________________
