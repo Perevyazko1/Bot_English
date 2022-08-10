@@ -43,6 +43,23 @@ def clear_text(a):
    a = a.split("[")
    a = ''.join(a)
    return a
+
+def clear_user(a):
+   a = str(a)
+   a = a.split("'")
+   a = ''.join(a)
+   a = a.split(")")
+   a = ''.join(a)
+   a = a.split("(")
+   a = ''.join(a)
+   a = a.split(",")
+   a = ''.join(a)
+   a = a.split("]")
+   a = ''.join(a)
+   a = a.split("[")
+   a = ''.join(a)
+   return a
+
 # __________________________ Создание_базы _____________________
 
 def sql_request(reqwest):
@@ -87,20 +104,25 @@ def sql_words (reqwest):
 async def load_qwes():
     global id_user
     print(id_user)
-    bodymessage = sql_words(f'SELECT Infinitive, Past_Simple, Participle, Перевод FROM words WHERE '
-                            f'[{id_user}]  IS NULL LIMIT 1')
-    await bot.send_message(chat_id=id_user,text= f'новые слова \n{clear_text(bodymessage)}')
+    users = sql_words(f'SELECT*FROM users')
+    for user in users:
+        user=clear_user(user)
+        bodymessage = sql_words(f'SELECT Infinitive, Past_Simple, Participle, Перевод FROM words WHERE '
+                            f'[{user}]  IS NULL LIMIT 1')
+        await bot.send_message(chat_id=user,text= f'новые слова \n{clear_text(bodymessage)}')
 
 
 async def scheduler():
-    aioschedule.every().day.at("13:02").do(load_qwes)
-    print(id_user)
-    while True:
-        await aioschedule.run_pending()
-        await asyncio.sleep(1)
+    times = '19:32','19:33','19:34'
+    for time in times:
+        aioschedule.every().day.at(time_str=time).do(load_qwes)
+        print(id_user)
 
 async def on_startup(dp):
     asyncio.create_task(scheduler())
+    while True:
+        await aioschedule.run_pending()
+        await asyncio.sleep(1)
 
 
 if __name__ == '__main__':
