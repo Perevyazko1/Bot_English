@@ -26,7 +26,16 @@ async def start(message: types.Message):
         sql_request(f'ALTER TABLE words ADD COLUMN  "{id_user}" INTEGER ')
     except:
         pass
-id_user=''
+
+@dp.message_handler(commands="test")
+async def get_test(message: types.Message):
+    user = message.from_id
+    bodymessage = sql_words(f'SELECT Infinitive, Past_Simple, Participle FROM words WHERE '
+                            f'[{user}]  IS NULL LIMIT 1')
+    await message.answer(f'Введи перевод \n{clear_text(bodymessage)}')
+    await message.answer('dasda')
+
+
 #___________________________Чистка_слов________________________
 def clear_text(a):
    a = str(a)
@@ -102,8 +111,6 @@ def sql_words (reqwest):
 
 @dp.message_handler()
 async def load_qwes():
-    global id_user
-    print(id_user)
     users = sql_words(f'SELECT*FROM users')
     for user in users:
         user=clear_user(user)
@@ -113,16 +120,18 @@ async def load_qwes():
 
 
 async def scheduler():
-    times = '19:32','19:33','19:34'
+    times = '21:18','21:19','21:20'
     for time in times:
         aioschedule.every().day.at(time_str=time).do(load_qwes)
-        print(id_user)
-
-async def on_startup(dp):
-    asyncio.create_task(scheduler())
     while True:
         await aioschedule.run_pending()
         await asyncio.sleep(1)
+
+
+
+
+async def on_startup(dp):
+    asyncio.create_task(scheduler())
 
 
 if __name__ == '__main__':
