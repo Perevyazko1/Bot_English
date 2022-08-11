@@ -86,8 +86,10 @@ async def get_request(state): # вставка перевода в запрос 
         await bot.send_message(iduser,text='Не правильно!!! Учи дальше!!!')
     else:
         await bot.send_message(iduser,text='Правильно! Ты молодец!')
-
-
+        new_question = number_question + 1
+        print(new_question)
+        cur.execute(f'UPDATE USERS SET number_question={new_question} WHERE id IS {str(iduser)} ')
+        base.commit()
 #___________________________Чистка_слов________________________
 def clear_text(a):
    a = str(a)
@@ -133,6 +135,7 @@ def sql_request(reqwest):
     base.commit()
 
 def sql_save_id(reqwest,user,number_question):
+
     global base, cur
     base = sq.connect('words.db')
     cur = base.cursor()
@@ -140,6 +143,17 @@ def sql_save_id(reqwest,user,number_question):
         print('Запрос прошел')
     cur.execute(reqwest, (user,number_question))
     base.commit()
+
+
+def sql_restore_number_question(reqwest):
+    global base, cur
+    base = sq.connect('words.db')
+    cur = base.cursor()
+    if cur:
+        print('Запрос прошел')
+    cur.execute(reqwest)
+    base.commit()
+
 
 def sql_add_user_base(reqwest):
     global base, cur
