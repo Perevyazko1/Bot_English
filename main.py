@@ -9,6 +9,10 @@ import os
 import asyncio
 import aioschedule
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
+from aiogram.utils.exceptions import (MessageToEditNotFound, MessageCantBeEdited, MessageCantBeDeleted,
+                              MessageToDeleteNotFound)
+from contextlib import suppress
+
 storage = MemoryStorage()
 bot = Bot(token='5463577812:AAEeYWZMkwYjRxf3Gm_cEsGZvYxG__ohMY0')
 
@@ -115,13 +119,13 @@ def sql_words (reqwest):
 async def load_qwes():
     users = sql_words(f'SELECT*FROM users')
     for user in users:
-        print(type(user[1]))
+        print(user)
         bodymessage = sql_words(f'SELECT Infinitive, Past_Simple, Participle, Перевод FROM words WHERE id_number = {str(user[1])}')
-        await bot.send_message(chat_id=648226895,text= f'новые слова \n{clear_text(bodymessage)}')
+        await bot.send_message(chat_id=user[0],text= f'новые слова \n{clear_text(bodymessage)}')
 
 
 async def scheduler():
-    times = '02:13','21:19','21:20'
+    times = '15:07','14:59','14:53'
     for time in times:
         aioschedule.every().day.at(time_str=time).do(load_qwes)
     while True:
