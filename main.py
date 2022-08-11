@@ -32,14 +32,60 @@ async def start(message: types.Message):
     except:
         pass
 
-@dp.message_handler(commands="test")
-async def get_test(message: types.Message):
+# ______________________________________проверка перевода__________________________________________________
+class FSMtest(StatesGroup): #сохранение запрашиваемого перевода в машину состояния
+    request = State()
+    id = State()
+@dp.message_handler(commands="test", state=None)
+async def get_name(message: types.Message):
+
+    await FSMtest.request.set()
     user = message.from_id
     print(user)
     number_question = sql_words(f'SELECT * FROM users WHERE id IS {str(user)}')
     number_question = (number_question[0])[1]
-    bodymessage = sql_words(f'SELECT Infinitive, Past_Simple, Participle, Перевод FROM words WHERE id_number = {str(number_question)}')
+    bodymessage = sql_words(
+    f'SELECT Infinitive, Past_Simple, Participle FROM words WHERE id_number = {str(number_question)}')
     await message.answer(f'Введи перевод \n{clear_text(bodymessage)}')
+
+
+#
+@dp.message_handler(state=FSMtest.request)
+async def load_request(message: types.Message, state: FSMContext):
+    if message.text == '/test':
+        await message.answer(f'<i>Нужно было ввести перевод на русском языке.</i>\n\n'
+                             f' <i>Можешь заново нажать кнопку и</i>\n\n'
+                             f' <i>ввести перевод на русском языке</i>',parse_mode=types.ParseMode.HTML)
+        await state.finish()
+    else:
+        async with state.proxy() as data:
+            data['id'] = message.from_id
+            data['request'] = message.text
+
+        await get_request(state)  # тут нужно записать в базу+1
+        await state.finish()
+
+
+async def get_request(state): # вставка перевода в запрос sql
+    global base, cur
+    base = sq.connect('words.db')
+    cur = base.cursor()
+    async with state.proxy() as data:
+        translate = list(data.values())
+        translate_word =str.lower(translate[1])
+        iduser=str(translate[0])
+        print(iduser)
+        print(translate_word)
+        number_question = cur.execute(f'SELECT * FROM users WHERE id IS {str(iduser)}').fetchall()
+        number_question = (number_question[0])[1]
+        reqwest = f"SELECT Перевод FROM words WHERE id_number = {number_question} AND Перевод  LIKE '%{translate_word}%'"
+        bodyreqwest = None
+        bodyreqwest = cur.execute(reqwest).fetchall()
+        print(bodyreqwest)
+    if not bodyreqwest:
+        await bot.send_message(iduser,text='Не правильно!!! Учи дальше!!!')
+    else:
+        await bot.send_message(iduser,text='Правильно! Ты молодец!')
 
 
 #___________________________Чистка_слов________________________
