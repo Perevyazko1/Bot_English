@@ -10,11 +10,11 @@ import asyncio
 import aioschedule
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.utils.exceptions import (MessageToEditNotFound, MessageCantBeEdited, MessageCantBeDeleted,
-                              MessageToDeleteNotFound)
+                              MessageToDeleteNotFound,BotBlocked)
 from contextlib import suppress
 
 storage = MemoryStorage()
-bot = Bot(token='5463577812:AAEeYWZMkwYjRxf3Gm_cEsGZvYxG__ohMY0')
+bot = Bot(token='5583125923:AAGQQriQL6OshZbgOn-kUBq1uxvfkvtZVkk')
 
 dp = Dispatcher(bot, storage=storage)
 @dp.message_handler(commands="start")
@@ -23,7 +23,8 @@ async def start(message: types.Message):
     id_user = message.from_id
     print(id_user)
     number_question = 1
-    await message.answer(f'Привет {message.from_user.full_name} \n\n' '<i>Выбери кнопку в меню.</i>',
+    await message.answer(f'Привет {message.from_user.full_name} \n\n' '<i>Этот бот будет тебе ежедневно отправлять по '
+                         'одной форме неапрвильного глагола.</i>',
                           parse_mode=types.ParseMode.HTML)
     sql_add_user_base('CREATE TABLE IF NOT EXISTS users (id PRIMARY KEY,number_question)')
     try:
@@ -179,15 +180,20 @@ def sql_words (reqwest):
 async def load_qwes():
     users = sql_words(f'SELECT*FROM users')
     for user in users:
-        print(user)
+        print(user[0])
         bodymessage = sql_words(f'SELECT Infinitive, Past_Simple, Participle, Перевод FROM words WHERE id_number = {str(user[1])}')
-        await bot.send_message(chat_id=user[0],text= f'новые слова \n{clear_text(bodymessage)}')
+        await bot.send_message(chat_id=user[0],text= f'Новые слова: \n{clear_text(bodymessage)}')
+
 
 
 async def scheduler():
-    times = '15:07','14:59','14:53'
+    times = '17:30','14:59','14:53'
     for time in times:
-        aioschedule.every().day.at(time_str=time).do(load_qwes)
+        try:
+            aioschedule.every().day.at(time_str=time).do(load_qwes)
+        except BotBlocked:
+            await asyncio.sleep(1)
+
     while True:
         await aioschedule.run_pending()
         await asyncio.sleep(1)
