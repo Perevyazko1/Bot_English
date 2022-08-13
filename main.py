@@ -13,7 +13,7 @@ from aiogram.utils.exceptions import (MessageToEditNotFound, MessageCantBeEdited
 from contextlib import suppress
 
 storage = MemoryStorage()
-bot = Bot(token='5583125923:AAGQQriQL6OshZbgOn-kUBq1uxvfkvtZVkk')
+bot = Bot(token='5583125923:AAEB7nIuaDDnPg6TPGqtxDMxLsHzFO3OenY')
 
 dp = Dispatcher(bot, storage=storage)
 @dp.message_handler(commands="start")
