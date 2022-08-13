@@ -1,4 +1,3 @@
-from aiogram.types import ContentType, Message
 from aiogram import Bot, Dispatcher
 from aiogram.utils import executor
 from aiogram.dispatcher import FSMContext
@@ -178,22 +177,28 @@ def sql_words (reqwest):
 
 @dp.message_handler()
 async def load_qwes():
-    users = sql_words(f'SELECT*FROM users')
-    for user in users:
-        print(user[0])
-        bodymessage = sql_words(f'SELECT Infinitive, Past_Simple, Participle, Перевод FROM words WHERE id_number = {str(user[1])}')
-        await bot.send_message(chat_id=user[0],text= f'Новые слова: \n{clear_text(bodymessage)}')
+    try:
+        users = sql_words(f'SELECT*FROM users')
+        for user in users:
+            print(user[0])
+            bodymessage = sql_words(f'SELECT Infinitive, Past_Simple, Participle, Перевод FROM words WHERE id_number = {str(user[1])}')
+            msg = await bot.send_message(chat_id=user[0],text= f'Новые слова: \n{clear_text(bodymessage)}')
+            await asyncio.sleep(1000)
+            try:
+                await msg.delete()
+            except Exception as e:
+                pass
+    except BotBlocked:
+        await asyncio.sleep(1)
+
 
 
 
 async def scheduler():
-    times = '17:30','14:59','14:53'
+    times = '11:00','15:00','19:00'
     for time in times:
-        try:
-            aioschedule.every().day.at(time_str=time).do(load_qwes)
-        except BotBlocked:
-            await asyncio.sleep(1)
 
+        aioschedule.every().day.at(time_str=time).do(load_qwes)
     while True:
         await aioschedule.run_pending()
         await asyncio.sleep(1)
